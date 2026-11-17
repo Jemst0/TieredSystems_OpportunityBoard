@@ -1,0 +1,12 @@
+# OS & Editor files
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Heavy design assets (if placed in repo)
+*.psd
+*.blend
+*.blend1
+*.ai
+node_modules/
