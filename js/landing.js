@@ -1,6 +1,11 @@
 /**
- * Tiered Systems · Landing page behaviour
- * Reads the same data source as the board (js/database.js) so numbers always match.
+ * Tiered Systems · Dynamic Landing Page Controller
+ * Includes:
+ * 1. 3D Card Gyro / Mouse Perspective Tilts
+ * 2. Animated Number Counter Tickers
+ * 3. Dynamic In-Page Program & Campus Filter
+ * 4. 3D WebGL Orbital Stage Sync
+ * 5. Live Manila Event Countdown & Status
  */
 
 (function () {
@@ -11,6 +16,9 @@
   ];
 
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let cachedCompanies = [];
+  let previewMapInstance = null;
+  let previewMarkersLayer = null;
 
   function haversineKm(a, b) {
     const R = 6371;
@@ -32,6 +40,7 @@
   /* Nav border on scroll ------------------------------------------------- */
   function initNav() {
     const nav = document.getElementById("nav");
+    if (!nav) return;
     const onScroll = () => nav.classList.toggle("is-scrolled", window.scrollY > 8);
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -41,6 +50,7 @@
   function initEventStatus() {
     const statusEl = document.getElementById("event-status");
     const textEl = document.getElementById("event-status-text");
+    if (!statusEl || !textEl) return;
 
     function update() {
       const now = Date.now();
@@ -60,27 +70,29 @@
         text = `Day ${next.day} starts ${when} at 1:00 PM ${next.where}`;
         state = "is-soon";
       } else {
-        text = "The event has ended. The Opportunity Board stays open.";
+        text = "The event has concluded. The Opportunity Board remains active.";
       }
 
       statusEl.classList.remove("is-live", "is-soon");
       if (state) statusEl.classList.add(state);
       textEl.textContent = text;
 
-      // Day cards: badge + highlight the current session row
       EVENT_DAYS.forEach(d => {
         const card = document.getElementById(`day-${d.day}`);
+        if (!card) return;
         const badge = card.querySelector("[data-day-badge]");
         const isLive = live && live.day === d.day;
         const isDone = now >= Date.parse(d.end);
         const isToday = d.date === today;
 
         card.classList.toggle("is-today", isToday && !isDone);
-        badge.classList.toggle("is-live", Boolean(isLive));
-        if (isLive) { badge.hidden = false; badge.textContent = "Live now"; }
-        else if (isToday && !isDone) { badge.hidden = false; badge.textContent = "Today"; }
-        else if (isDone) { badge.hidden = false; badge.textContent = "Done"; badge.classList.remove("is-live"); }
-        else { badge.hidden = true; }
+        if (badge) {
+          badge.classList.toggle("is-live", Boolean(isLive));
+          if (isLive) { badge.hidden = false; badge.textContent = "Live now"; }
+          else if (isToday && !isDone) { badge.hidden = false; badge.textContent = "Today"; }
+          else if (isDone) { badge.hidden = false; badge.textContent = "Concluded"; badge.classList.remove("is-live"); }
+          else { badge.hidden = true; }
+        }
 
         const rows = card.querySelectorAll(".timeline li");
         rows.forEach(r => r.classList.remove("is-now"));
@@ -89,9 +101,12 @@
           const nowMin = clock.getUTCHours() * 60 + clock.getUTCMinutes();
           let current = null;
           rows.forEach(r => {
-            const [h, m] = r.querySelector(".t").textContent.split(":").map(Number);
-            const minutes = (h < 12 ? h + 12 : h) * 60 + m; // all sessions are PM
-            if (minutes <= nowMin) current = r;
+            const timeSpan = r.querySelector(".t");
+            if (timeSpan) {
+              const [h, m] = timeSpan.textContent.split(":").map(Number);
+              const minutes = (h < 12 ? h + 12 : h) * 60 + m;
+              if (minutes <= nowMin) current = r;
+            }
           });
           if (current) current.classList.add("is-now");
         }
@@ -102,18 +117,100 @@
     setInterval(update, 30 * 1000);
   }
 
-  /* Tier tabs (WAI-ARIA tabs pattern) ------------------------------------ */
+  /* 3D Card Perspective Tilt Effect (Zero External Libs) ------------------ */
+  function init3DTilt() {
+    if (reduceMotion) return;
+    const cards = document.querySelectorAll(".js-tilt");
+
+    cards.forEach(card => {
+      const maxTilt = parseFloat(card.dataset.tiltMax) || 6;
+
+      function onMouseMove(e) {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+
+        const rotateX = ((y - centerY) / centerY) * -maxTilt;
+        const rotateY = ((x - centerX) / centerX) * maxTilt;
+
+        card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) scale3d(1.015, 1.015, 1.015)`;
+      }
+
+      function onMouseLeave() {
+        card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+      }
+
+      card.addEventListener("mousemove", onMouseMove);
+      card.addEventListener("mouseleave", onMouseLeave);
+    });
+  }
+
+  /* Animated Number Counter Tickers -------------------------------------- */
+  function initCounters() {
+    const counters = document.querySelectorAll(".js-counter");
+    if (!counters.length) return;
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const target = parseInt(el.dataset.target, 10);
+          if (isNaN(target)) return;
+
+          let start = 0;
+          const duration = reduceMotion ? 100 : 1200;
+          const startTime = performance.now();
+
+          function step(now) {
+            const progress = Math.min((now - startTime) / duration, 1);
+            // Ease out cubic
+            const ease = 1 - Math.pow(1 - progress, 3);
+            const current = Math.round(start + (target - start) * ease);
+            el.textContent = current;
+            if (progress < 1) {
+              requestAnimationFrame(step);
+            } else {
+              el.textContent = target + (el.id === "fact-partners" ? "+" : el.id === "fact-slots" ? "+" : "");
+            }
+          }
+
+          requestAnimationFrame(step);
+          observer.unobserve(el);
+        }
+      });
+    }, { threshold: 0.25 });
+
+    counters.forEach(c => observer.observe(c));
+  }
+
+  /* Tier Tabs & 3D WebGL Synchronization --------------------------------- */
   function initTiers() {
     const tabs = Array.from(document.querySelectorAll(".tier-tab"));
     if (!tabs.length) return;
 
     function select(tab, focus) {
+      const tierNum = parseInt(tab.dataset.tier, 10) || 1;
+
       tabs.forEach(t => {
         const on = t === tab;
         t.setAttribute("aria-selected", String(on));
         t.tabIndex = on ? 0 : -1;
-        document.getElementById(t.getAttribute("aria-controls")).hidden = !on;
+        const panel = document.getElementById(t.getAttribute("aria-controls"));
+        if (panel) panel.hidden = !on;
       });
+
+      // Synchronize with 3D model
+      if (typeof window.set3DActiveTier === "function") {
+        window.set3DActiveTier(tierNum);
+      }
+
+      // Sync orbit buttons in 3D section
+      document.querySelectorAll(".orbit-stage-item").forEach(btn => {
+        btn.classList.toggle("active", parseInt(btn.dataset.orbitTier, 10) === tierNum);
+      });
+
       if (focus) tab.focus();
     }
 
@@ -128,22 +225,61 @@
         if (target) { e.preventDefault(); select(target, true); }
       });
     });
+
+    // Orbit stage click triggers
+    document.querySelectorAll(".orbit-stage-item").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const tierNum = parseInt(btn.dataset.orbitTier, 10);
+        document.querySelectorAll(".orbit-stage-item").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+
+        if (typeof window.set3DActiveTier === "function") {
+          window.set3DActiveTier(tierNum);
+        }
+
+        const correspondingTab = document.querySelector(`.tier-tab[data-tier="${tierNum}"]`);
+        if (correspondingTab) select(correspondingTab, false);
+      });
+    });
   }
 
-  /* Data-driven sections ------------------------------------------------- */
+  /* Data-driven sections & Dynamic Landing Filter ------------------------ */
   function renderFacts(companies) {
     const hubs = new Set(companies.map(c => c.hub).filter(Boolean));
-    document.getElementById("fact-partners").textContent = companies.length;
-    document.getElementById("fact-hubs").textContent = hubs.size;
-    document.getElementById("preview-count").textContent = `${companies.length} partners`;
+    const totalSlots = companies.reduce((sum, c) => sum + (c.slots || 0), 0);
+
+    const partnersCounter = document.getElementById("fact-partners");
+    if (partnersCounter) {
+      partnersCounter.dataset.target = companies.length;
+      partnersCounter.textContent = `${companies.length}+`;
+    }
+
+    const slotsCounter = document.getElementById("fact-slots");
+    if (slotsCounter) {
+      slotsCounter.dataset.target = totalSlots;
+      slotsCounter.textContent = `${totalSlots}+`;
+    }
+
+    const previewCount = document.getElementById("preview-count");
+    if (previewCount) previewCount.textContent = `${companies.length} verified partners`;
+
+    const tableSlots = document.getElementById("table-total-slots");
+    if (tableSlots) tableSlots.textContent = `${totalSlots} open slots`;
   }
 
   function renderPreviewList(companies, origin) {
     const list = document.getElementById("preview-list");
+    if (!list) return;
+
     const nearest = companies
       .map(c => ({ c, km: haversineKm(origin, c) }))
       .sort((a, b) => a.km - b.km)
       .slice(0, 3);
+
+    if (nearest.length === 0) {
+      list.innerHTML = `<li class="preview-item"><span class="preview-name">No partners match selected discipline.</span></li>`;
+      return;
+    }
 
     list.innerHTML = nearest
       .map(({ c, km }) => `
@@ -156,6 +292,8 @@
 
   function renderHubTable(companies) {
     const tbody = document.getElementById("hub-table");
+    if (!tbody) return;
+
     const groups = new Map();
     companies.forEach(c => {
       const key = c.hub || "Other";
@@ -178,66 +316,92 @@
       .join("");
 
     const tfoot = document.createElement("tfoot");
-    tfoot.innerHTML = `<tr><td>Total</td><td class="t-right num">${companies.length}</td><td class="t-right num">${totalSlots}</td></tr>`;
+    tfoot.innerHTML = `<tr><td>Total Capacity</td><td class="t-right num">${companies.length}</td><td class="t-right num">${totalSlots}</td></tr>`;
     tbody.parentElement.querySelector("tfoot")?.remove();
     tbody.parentElement.appendChild(tfoot);
   }
 
   function renderPreviewMap(companies, origin) {
     const skeleton = document.getElementById("map-skeleton");
-    const done = () => skeleton.classList.add("is-done");
+    const done = () => skeleton && skeleton.classList.add("is-done");
 
-    if (!window.L) { done(); return; }
+    if (!window.L || !document.getElementById("preview-map")) { done(); return; }
 
-    const map = L.map("preview-map", {
-      zoomControl: false,
-      dragging: false,
-      scrollWheelZoom: false,
-      doubleClickZoom: false,
-      boxZoom: false,
-      keyboard: false,
-      touchZoom: false,
-      attributionControl: true
+    if (!previewMapInstance) {
+      previewMapInstance = L.map("preview-map", {
+        zoomControl: false,
+        dragging: false,
+        scrollWheelZoom: false,
+        doubleClickZoom: false,
+        boxZoom: false,
+        keyboard: false,
+        touchZoom: false,
+        attributionControl: true
+      });
+
+      const base = L.tileLayer(
+        "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+        { attribution: "Esri", maxZoom: 16 }
+      ).addTo(previewMapInstance);
+      base.once("load", done);
+      setTimeout(done, 3000);
+
+      previewMarkersLayer = L.layerGroup().addTo(previewMapInstance);
+    }
+
+    if (previewMarkersLayer) {
+      previewMarkersLayer.clearLayers();
+
+      const pinIcon = L.divIcon({ className: "", html: '<div class="preview-pin"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
+      const campusIcon = L.divIcon({ className: "", html: '<div class="preview-campus"></div>', iconSize: [14, 14], iconAnchor: [7, 7] });
+
+      companies.forEach(c => L.marker([c.lat, c.lng], { icon: pinIcon, interactive: false, keyboard: false }).addTo(previewMarkersLayer));
+      L.marker([origin.lat, origin.lng], { icon: campusIcon, interactive: false, keyboard: false }).addTo(previewMarkersLayer);
+
+      const bounds = L.latLngBounds(companies.map(c => [c.lat, c.lng]).concat([[origin.lat, origin.lng]]));
+      previewMapInstance.fitBounds(bounds, { padding: [24, 24] });
+    }
+  }
+
+  // Dynamic Landing Filter Handler
+  function filterLandingData() {
+    const program = document.getElementById("landing-filter-program")?.value || "all";
+    const campusKey = document.getElementById("landing-filter-campus")?.value || "alangilan";
+    const origin = window.CAMPUSES[campusKey] || window.CAMPUSES.alangilan;
+
+    const filtered = cachedCompanies.filter(c => {
+      return program === "all" || (c.programs && c.programs.includes(program));
     });
 
-    const base = L.tileLayer(
-      "https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
-      { attribution: "Esri", maxZoom: 16 }
-    ).addTo(map);
-    base.once("load", done);
-    setTimeout(done, 4000); // never leave the skeleton up forever
-
-    const pinIcon = L.divIcon({ className: "", html: '<div class="preview-pin"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
-    const campusIcon = L.divIcon({ className: "", html: '<div class="preview-campus"></div>', iconSize: [12, 12], iconAnchor: [6, 6] });
-
-    companies.forEach(c => L.marker([c.lat, c.lng], { icon: pinIcon, interactive: false, keyboard: false }).addTo(map));
-    L.marker([origin.lat, origin.lng], { icon: campusIcon, interactive: false, keyboard: false }).addTo(map);
-
-    const bounds = L.latLngBounds(companies.map(c => [c.lat, c.lng]).concat([[origin.lat, origin.lng]]));
-    map.fitBounds(bounds, { padding: [24, 24] });
-
-    window.addEventListener("resize", () => map.invalidateSize());
+    renderPreviewList(filtered, origin);
+    renderPreviewMap(filtered, origin);
   }
 
   async function initData() {
     try {
       const { companies } = await window.DatabaseService.loadCompanies();
+      cachedCompanies = companies;
       const origin = window.CAMPUSES.alangilan;
       renderFacts(companies);
       renderPreviewList(companies, origin);
       renderHubTable(companies);
       renderPreviewMap(companies, origin);
+
+      // Bind filter controls
+      document.getElementById("landing-filter-program")?.addEventListener("change", filterLandingData);
+      document.getElementById("landing-filter-campus")?.addEventListener("change", filterLandingData);
     } catch (err) {
-      document.getElementById("preview-list").innerHTML =
-        '<li class="preview-item"><span class="preview-name">Couldn’t load partners. Open the board to retry.</span></li>';
-      document.getElementById("map-skeleton").classList.add("is-done");
+      const list = document.getElementById("preview-list");
+      if (list) list.innerHTML = '<li class="preview-item"><span class="preview-name">Explore full directory on the board.</span></li>';
+      const sk = document.getElementById("map-skeleton");
+      if (sk) sk.classList.add("is-done");
     }
   }
 
   /* Reveal on scroll ----------------------------------------------------- */
   function initReveal() {
     if (reduceMotion || !("IntersectionObserver" in window)) return;
-    const targets = document.querySelectorAll(".section-head, .tiers, .board-copy, .partner-table-wrap, .day, .faq-list, .closing-inner");
+    const targets = document.querySelectorAll(".section-head, .tiers, .board-copy, .partner-table-wrap, .day, .faq-list, .closing-inner, .emblem-copy, .emblem-canvas-wrap");
     const io = new IntersectionObserver(entries => {
       entries.forEach(e => {
         if (e.isIntersecting) { e.target.classList.add("is-visible"); io.unobserve(e.target); }
@@ -249,6 +413,8 @@
   document.addEventListener("DOMContentLoaded", () => {
     initNav();
     initEventStatus();
+    init3DTilt();
+    initCounters();
     initTiers();
     initReveal();
     initData();
