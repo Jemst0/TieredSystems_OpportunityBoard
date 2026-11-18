@@ -206,12 +206,10 @@
         window.set3DActiveTier(tierNum);
       }
 
-      // Sync 4-tier stack buttons in 3D section
-      document.querySelectorAll(".orbit-stage-item").forEach(btn => {
-        const tier = parseInt(btn.dataset.stackTier || btn.dataset.orbitTier, 10);
-        const isActive = tier === tierNum;
-        btn.classList.toggle("active", isActive);
-        btn.setAttribute("aria-selected", isActive ? "true" : "false");
+      // Sync stage buttons in 3D section
+      document.querySelectorAll(".tier-stage-btn, .orbit-stage-item").forEach(btn => {
+        const stageNum = parseInt(btn.dataset.stageTier || btn.dataset.orbitTier, 10);
+        btn.classList.toggle("active", stageNum === tierNum);
       });
 
       if (focus) tab.focus();
@@ -229,16 +227,12 @@
       });
     });
 
-    // 4-tier stack click triggers
-    document.querySelectorAll(".orbit-stage-item").forEach(btn => {
+    // Tier stage click triggers (synchronized with 3D model and Roadmap tabs)
+    document.querySelectorAll(".tier-stage-btn, .orbit-stage-item").forEach(btn => {
       btn.addEventListener("click", () => {
-        const tierNum = parseInt(btn.dataset.stackTier || btn.dataset.orbitTier, 10);
-        document.querySelectorAll(".orbit-stage-item").forEach(b => {
-          b.classList.remove("active");
-          b.setAttribute("aria-selected", "false");
-        });
+        const tierNum = parseInt(btn.dataset.stageTier || btn.dataset.orbitTier, 10);
+        document.querySelectorAll(".tier-stage-btn, .orbit-stage-item").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
-        btn.setAttribute("aria-selected", "true");
 
         if (typeof window.set3DActiveTier === "function") {
           window.set3DActiveTier(tierNum);

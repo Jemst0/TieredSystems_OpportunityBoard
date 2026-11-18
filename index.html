@@ -37,8 +37,8 @@
       </a>
 
       <nav class="nav-links" aria-label="Primary">
-        <a href="#emblem-showcase">3D Architecture</a>
-        <a href="#tiers">Tiers</a>
+        <a href="#emblem-showcase">Program Tiers</a>
+        <a href="#tiers">Roadmap</a>
         <a href="#board">Opportunity Board</a>
         <a href="#schedule">Schedule</a>
         <a href="#faq">FAQ</a>
@@ -76,7 +76,7 @@
               Open the Opportunity Board
               <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
             </a>
-            <a href="#emblem-showcase" class="btn btn-ghost btn-lg">Explore 4-Tier Stack</a>
+            <a href="#emblem-showcase" class="btn btn-ghost btn-lg">Explore the 4 Tiers</a>
           </div>
 
           <p class="event-status" id="event-status" role="status" aria-live="polite">
@@ -131,53 +131,54 @@
       </div>
     </section>
 
-    <!-- 3D Section: Interactive 4-Tier Architecture & Official Event Crest -->
+    <!-- 3D Section: Official Tiered System 3D Emblem & 4-Tier Progression -->
     <section class="section 3d-showcase-section" id="emblem-showcase" aria-labelledby="emblem-showcase-title">
       <div class="container emblem-grid">
         <div class="emblem-copy">
-          <span class="section-tag">Program Architecture</span>
-          <h2 id="emblem-showcase-title" class="section-title">The 4-Tier Progression Stack</h2>
+          <h2 id="emblem-showcase-title" class="section-title">Four tiers to engineering career readiness.</h2>
           <p class="section-lede">
-            Engineering your next level is structured into four sequential tiers designed by CURSOR. Each tier builds tangible, verifiable deliverables before unlocking industry access at the Leonardo da Vinci Amphitheater.
+            Organized by CURSOR at BatStateU Alangilan. Each tier represents a verified milestone—advancing Computer Engineering students from technical resume calibration to direct company placement on the Opportunity Board.
           </p>
 
-          <div class="tier-stack-list orbit-stages-list" role="tablist" aria-label="Program progression tiers">
-            <button type="button" class="tier-stack-item orbit-stage-item active" data-stack-tier="1" data-orbit-tier="1" role="tab" aria-selected="true">
+          <div class="tier-stages-list" role="tablist" aria-label="Progression tiers">
+            <button type="button" class="tier-stage-btn active" data-stage-tier="1">
               <span class="stage-num num">T1</span>
               <div>
                 <strong>Tier 01: Prepare</strong>
-                <p>Day 1 (Zoom) · Technical resume formatting & Git project proof-of-work.</p>
+                <p>Technical resume overhaul & verifiable project artifact (code, circuit, CAD).</p>
               </div>
             </button>
-            <button type="button" class="tier-stack-item orbit-stage-item" data-stack-tier="2" data-orbit-tier="2" role="tab" aria-selected="false">
+            <button type="button" class="tier-stage-btn" data-stage-tier="2">
               <span class="stage-num num">T2</span>
               <div>
                 <strong>Tier 02: Level Up</strong>
-                <p>Day 1 (Zoom) · LinkedIn profile architecture & 45-second technical pitch.</p>
+                <p>LinkedIn digital architecture & 45-second technical elevator pitch.</p>
               </div>
             </button>
-            <button type="button" class="tier-stack-item orbit-stage-item" data-stack-tier="3" data-orbit-tier="3" role="tab" aria-selected="false">
+            <button type="button" class="tier-stage-btn" data-stage-tier="3">
               <span class="stage-num num">T3</span>
               <div>
                 <strong>Tier 03: Discover</strong>
-                <p>Day 2 (Amphitheater) · Corporate plenary, alumni benchmarks & OJT pathways.</p>
+                <p>Industry plenary address & alumni engineering career benchmarks.</p>
               </div>
             </button>
-            <button type="button" class="tier-stack-item orbit-stage-item" data-stack-tier="4" data-orbit-tier="4" role="tab" aria-selected="false">
+            <button type="button" class="tier-stage-btn" data-stage-tier="4">
               <span class="stage-num num">T4</span>
               <div>
                 <strong>Tier 04: Connect</strong>
-                <p>Day 2 (Amphitheater) · Live MOA Opportunity Board & recruitment booths.</p>
+                <p>Active MOA Opportunity Board station & partner company matching.</p>
               </div>
             </button>
           </div>
         </div>
 
         <div class="emblem-canvas-wrap js-tilt" data-tilt-max="5">
-          <div id="emblem-3d-canvas" class="emblem-3d-canvas" aria-label="Interactive 3D model of the Tiered System 4-tier stack and official crest"></div>
-          <div class="canvas-footer-bar">
-            <span class="status-dot-mini" aria-hidden="true"></span>
-            <span id="canvas-active-tier-label" class="canvas-tier-label">Tier 01: Prepare · Resume & Git Proof (Day 1 Zoom)</span>
+          <div id="emblem-3d-canvas" class="emblem-3d-canvas" aria-label="Interactive 3D model of the Tiered System emblem and 4 progression tiers"></div>
+          <div class="canvas-tier-indicator">
+            <span class="tier-indicator-pill">
+              <span class="indicator-dot" aria-hidden="true"></span>
+              <span class="indicator-text" id="indicator-tier-name">Tier 01: Prepare · Resume & Project Artifact</span>
+            </span>
           </div>
         </div>
       </div>
@@ -187,7 +188,6 @@
     <section class="section" id="tiers" aria-labelledby="tiers-title">
       <div class="container">
         <div class="section-head">
-          <span class="section-tag">Program Roadmap</span>
           <h2 id="tiers-title" class="section-title">Four progressive tiers. Each one unlocks the next.</h2>
           <p class="section-lede">
             Day 1 builds your professional artifacts. Day 2 connects you to companies with verified agreements.
@@ -288,7 +288,6 @@
     <section class="section section-alt" id="board" aria-labelledby="board-title">
       <div class="container board-grid">
         <div class="board-copy">
-          <span class="section-tag">Partner Directory</span>
           <h2 id="board-title" class="section-title">Verified partner companies. Filtered by distance and discipline.</h2>
           <p class="section-lede">
             Every listing represents an active Memorandum of Agreement (MOA) with the university. Select your campus and test the live filters right here:
@@ -369,7 +368,6 @@
     <section class="section" id="schedule" aria-labelledby="schedule-title">
       <div class="container">
         <div class="section-head">
-          <span class="section-tag">Program Schedule</span>
           <h2 id="schedule-title" class="section-title">Two calibrated afternoons. One online, one on campus.</h2>
         </div>
 
@@ -421,7 +419,6 @@
     <section class="section section-alt" id="faq" aria-labelledby="faq-title">
       <div class="container faq-grid">
         <div>
-          <span class="section-tag">Frequently Asked Questions</span>
           <h2 id="faq-title" class="section-title">Frequently asked questions</h2>
         </div>
 
