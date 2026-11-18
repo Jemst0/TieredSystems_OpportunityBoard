@@ -206,9 +206,12 @@
         window.set3DActiveTier(tierNum);
       }
 
-      // Sync orbit buttons in 3D section
+      // Sync 4-tier stack buttons in 3D section
       document.querySelectorAll(".orbit-stage-item").forEach(btn => {
-        btn.classList.toggle("active", parseInt(btn.dataset.orbitTier, 10) === tierNum);
+        const tier = parseInt(btn.dataset.stackTier || btn.dataset.orbitTier, 10);
+        const isActive = tier === tierNum;
+        btn.classList.toggle("active", isActive);
+        btn.setAttribute("aria-selected", isActive ? "true" : "false");
       });
 
       if (focus) tab.focus();
@@ -226,12 +229,16 @@
       });
     });
 
-    // Orbit stage click triggers
+    // 4-tier stack click triggers
     document.querySelectorAll(".orbit-stage-item").forEach(btn => {
       btn.addEventListener("click", () => {
-        const tierNum = parseInt(btn.dataset.orbitTier, 10);
-        document.querySelectorAll(".orbit-stage-item").forEach(b => b.classList.remove("active"));
+        const tierNum = parseInt(btn.dataset.stackTier || btn.dataset.orbitTier, 10);
+        document.querySelectorAll(".orbit-stage-item").forEach(b => {
+          b.classList.remove("active");
+          b.setAttribute("aria-selected", "false");
+        });
         btn.classList.add("active");
+        btn.setAttribute("aria-selected", "true");
 
         if (typeof window.set3DActiveTier === "function") {
           window.set3DActiveTier(tierNum);

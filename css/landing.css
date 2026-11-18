@@ -264,6 +264,7 @@ a { color: inherit; }
   align-items: center;
 }
 
+.tier-stack-list,
 .orbit-stages-list {
   margin-top: var(--space-8);
   display: flex;
@@ -271,6 +272,7 @@ a { color: inherit; }
   gap: var(--space-3);
 }
 
+.tier-stack-item,
 .orbit-stage-item {
   display: flex;
   align-items: flex-start;
@@ -286,6 +288,7 @@ a { color: inherit; }
   transition: all var(--dur-fast) ease;
 }
 
+.tier-stack-item:hover,
 .orbit-stage-item:hover {
   background: var(--surface-card-hover);
   border-color: var(--border-strong);
@@ -293,6 +296,7 @@ a { color: inherit; }
   transform: translateX(4px);
 }
 
+.tier-stack-item.active,
 .orbit-stage-item.active {
   background: rgba(255, 107, 0, 0.08);
   border-color: var(--brand-border);
@@ -310,7 +314,9 @@ a { color: inherit; }
   flex-shrink: 0;
 }
 
+.tier-stack-item strong,
 .orbit-stage-item strong { display: block; font-size: var(--text-sm); font-weight: 700; color: #fff; margin-bottom: 2px; }
+.tier-stack-item p,
 .orbit-stage-item p { font-size: var(--text-xs); color: var(--text-muted); line-height: 1.4; }
 
 .emblem-canvas-wrap {
@@ -323,27 +329,28 @@ a { color: inherit; }
   padding: var(--space-2);
 }
 
-.canvas-header-bar {
+.canvas-footer-bar {
+  position: absolute;
+  bottom: var(--space-3);
+  left: var(--space-4);
+  right: var(--space-4);
+  background: rgba(14, 16, 23, 0.88);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  padding: 8px 14px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: var(--space-2) var(--space-4);
+  gap: var(--space-3);
+  pointer-events: none;
 }
 
-.canvas-badge {
+.canvas-tier-label {
   font-size: var(--text-xs);
-  color: var(--brand);
-  font-weight: 700;
-  background: var(--brand-subtle);
-  padding: 2px 8px;
-  border-radius: var(--radius-xs);
-  border: 1px solid var(--brand-border);
-}
-
-.canvas-hint {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-family: var(--font-mono);
+  color: var(--text-primary);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .emblem-3d-canvas {

@@ -1,6 +1,12 @@
 /**
- * Tiered Systems · 3D WebGL Emblem & Orbital Architecture
- * Built with Three.js (PBR Metallic Materials, Dynamic Point Lighting & Gyro Parallax)
+ * Tiered Systems · 3D Interactive 4-Tier Architecture & Event Emblem
+ * Directly models the 4 progressive tiers of the CURSOR event:
+ * Tier 01: Prepare (Foundation Slab)
+ * Tier 02: Level Up (Execution Platform)
+ * Tier 03: Discover (Orientation Stage)
+ * Tier 04: Connect (Summit Platform + Official Golden Armillary Emblem)
+ *
+ * Background: Recreates the iconic matrix of rounded-rect tiles from the official event poster.
  */
 
 (function () {
@@ -11,115 +17,353 @@
 
   // Scene, Camera, Renderer
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 100);
-  camera.position.set(0, 0, 7.5);
+  const camera = new THREE.PerspectiveCamera(42, container.clientWidth / container.clientHeight, 0.1, 100);
+  camera.position.set(0, 1.2, 7.8);
 
   const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true, powerPreference: "high-performance" });
   renderer.setSize(container.clientWidth, container.clientHeight);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.25;
+  renderer.toneMappingExposure = 1.35;
   container.appendChild(renderer.domElement);
 
-  // Group to rotate with mouse/touch
-  const emblemGroup = new THREE.Group();
-  scene.add(emblemGroup);
+  // Main group that responds to drag/tilt
+  const rootGroup = new THREE.Group();
+  // Slight isometric angle to clearly see the 4 stepped tiers
+  rootGroup.rotation.x = 0.22;
+  rootGroup.rotation.y = -0.35;
+  scene.add(rootGroup);
 
-  // Lighting
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+  // Lighting Setup
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.55);
   scene.add(ambientLight);
 
-  // Warm Solar Orange Core Point Light
-  const coreLight = new THREE.PointLight(0xff7700, 3.5, 12, 1.2);
-  coreLight.position.set(0, 0, 0);
-  emblemGroup.add(coreLight);
+  // Warm Solar Orange Core Light
+  const coreLight = new THREE.PointLight(0xff7700, 4.0, 14, 1.4);
+  coreLight.position.set(0, 1.55, 0);
+  rootGroup.add(coreLight);
 
-  // Specular directional key light
-  const keyLight = new THREE.DirectionalLight(0xffeedd, 2.2);
-  keyLight.position.set(5, 5, 6);
+  // Specular key light for metallic reflections
+  const keyLight = new THREE.DirectionalLight(0xfff3e0, 2.5);
+  keyLight.position.set(5, 7, 6);
   scene.add(keyLight);
 
-  const rimLight = new THREE.DirectionalLight(0xff6b00, 3.0);
-  rimLight.position.set(-6, -4, -4);
+  // Rim light in Solar Orange
+  const rimLight = new THREE.DirectionalLight(0xff6b00, 3.2);
+  rimLight.position.set(-6, -2, -4);
   scene.add(rimLight);
 
-  // Materials: High-end Brushed Golden-Bronze Metallic
-  const goldMaterial = new THREE.MeshStandardMaterial({
-    color: 0xdf8428,
-    metalness: 0.92,
-    roughness: 0.22,
-    envMapIntensity: 1.5
+  // Materials
+  const slabMaterial = new THREE.MeshStandardMaterial({
+    color: 0x14161f,
+    metalness: 0.88,
+    roughness: 0.28
   });
 
-  const coreMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff5500,
-    emissive: 0xff3300,
-    emissiveIntensity: 0.6,
-    metalness: 0.8,
-    roughness: 0.3
+  const goldMetallicMaterial = new THREE.MeshStandardMaterial({
+    color: 0xdf8a28,
+    metalness: 0.94,
+    roughness: 0.18
   });
 
-  const glowWireMaterial = new THREE.MeshBasicMaterial({
-    color: 0xffaa33,
-    wireframe: true,
-    transparent: true,
-    opacity: 0.35
+  const solarCoreMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff6b00,
+    emissive: 0xff4400,
+    emissiveIntensity: 0.85,
+    metalness: 0.5,
+    roughness: 0.2
   });
 
-  // 1. Central Core Sphere
-  const coreGeo = new THREE.SphereGeometry(1.05, 32, 32);
-  const coreMesh = new THREE.Mesh(coreGeo, coreMaterial);
-  emblemGroup.add(coreMesh);
+  // Helper to create rounded rectangular shapes
+  function createRoundedRectShape(w, h, r) {
+    const shape = new THREE.Shape();
+    const x = -w / 2;
+    const y = -h / 2;
+    shape.moveTo(x + r, y);
+    shape.lineTo(x + w - r, y);
+    shape.quadraticCurveTo(x + w, y, x + w, y + r);
+    shape.lineTo(x + w, y + h - r);
+    shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    shape.lineTo(x + r, y + h);
+    shape.quadraticCurveTo(x, y + h, x, y + h - r);
+    shape.lineTo(x, y + r);
+    shape.quadraticCurveTo(x, y, x + r, y);
+    return shape;
+  }
 
-  // Subtle wireframe halo around core
-  const haloGeo = new THREE.SphereGeometry(1.08, 16, 16);
-  const haloMesh = new THREE.Mesh(haloGeo, glowWireMaterial);
-  emblemGroup.add(haloMesh);
+  // Helper to create a 3D isometric tiered platform slab
+  function createPlatformMesh(w, d, h, r) {
+    const shape = createRoundedRectShape(w, d, r);
+    const extrudeSettings = {
+      depth: h,
+      bevelEnabled: true,
+      bevelSegments: 4,
+      steps: 1,
+      bevelSize: 0.04,
+      bevelThickness: 0.04
+    };
+    const geo = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    // Orient horizontally (XZ plane)
+    geo.rotateX(Math.PI / 2);
+    // Center vertically
+    geo.center();
+    return geo;
+  }
 
-  // 2. The 4 Interlocking Orbital Rings (Representing Tier 01, 02, 03, 04)
-  const rings = [];
-  const ringConfigs = [
-    { radius: 1.85, tube: 0.065, rot: [Math.PI / 4, Math.PI / 6, 0], speed: 0.008, tier: 1 },
-    { radius: 2.15, tube: 0.055, rot: [-Math.PI / 3, Math.PI / 4, Math.PI / 8], speed: -0.006, tier: 2 },
-    { radius: 2.45, tube: 0.05, rot: [Math.PI / 2.2, -Math.PI / 5, Math.PI / 3], speed: 0.005, tier: 3 },
-    { radius: 2.75, tube: 0.045, rot: [-Math.PI / 6, -Math.PI / 2.5, 0], speed: -0.004, tier: 4 }
+  // 1. Build the Poster's Iconic Matrix Backdrop (Grid of rounded-rect dark tiles)
+  const backdropGroup = new THREE.Group();
+  backdropGroup.position.set(0, 0, -2.6);
+  rootGroup.add(backdropGroup);
+
+  const tileShape = createRoundedRectShape(1.15, 1.15, 0.2);
+  const tileGeo = new THREE.ExtrudeGeometry(tileShape, {
+    depth: 0.08,
+    bevelEnabled: true,
+    bevelSegments: 2,
+    bevelSize: 0.02,
+    bevelThickness: 0.02
+  });
+  tileGeo.center();
+
+  const tileMaterial = new THREE.MeshStandardMaterial({
+    color: 0x0c0d12,
+    metalness: 0.7,
+    roughness: 0.5
+  });
+
+  // 4 columns x 3 rows of tiles matching the poster
+  for (let col = -1.5; col <= 1.5; col += 1.0) {
+    for (let row = -1; row <= 1; row += 1.0) {
+      const tileMesh = new THREE.Mesh(tileGeo, tileMaterial);
+      tileMesh.position.set(col * 1.35, row * 1.35 + 0.1, 0);
+      backdropGroup.add(tileMesh);
+    }
+  }
+
+  // Warm backlight shining from behind the tiles
+  const backSunLight = new THREE.PointLight(0xff6b00, 3.5, 9, 1.2);
+  backSunLight.position.set(0, 0.2, -2.4);
+  rootGroup.add(backSunLight);
+
+  // 2. Build the 4 Physical Tiers of Tiered System
+  const tiers = [];
+  const tierConfigs = [
+    {
+      tier: 1,
+      name: "Tier 01: Prepare",
+      desc: "Resume & Git Proof",
+      w: 3.4,
+      d: 3.4,
+      h: 0.22,
+      r: 0.35,
+      baseY: -1.35
+    },
+    {
+      tier: 2,
+      name: "Tier 02: Level Up",
+      desc: "LinkedIn & Technical Pitch",
+      w: 2.7,
+      d: 2.7,
+      h: 0.22,
+      r: 0.3,
+      baseY: -0.72
+    },
+    {
+      tier: 3,
+      name: "Tier 03: Discover",
+      desc: "Industry Plenary & Pathways",
+      w: 2.05,
+      d: 2.05,
+      h: 0.22,
+      r: 0.25,
+      baseY: -0.09
+    },
+    {
+      tier: 4,
+      name: "Tier 04: Connect",
+      desc: "MOA Opportunity Board",
+      w: 1.45,
+      d: 1.45,
+      h: 0.22,
+      r: 0.2,
+      baseY: 0.54
+    }
   ];
 
-  ringConfigs.forEach(cfg => {
-    const ringGeo = new THREE.TorusGeometry(cfg.radius, cfg.tube, 24, 80);
-    const ringMesh = new THREE.Mesh(ringGeo, goldMaterial.clone());
-    ringMesh.rotation.set(...cfg.rot);
-    emblemGroup.add(ringMesh);
-    rings.push({ mesh: ringMesh, baseSpeed: cfg.speed, tier: cfg.tier });
+  tierConfigs.forEach(cfg => {
+    const tierGroup = new THREE.Group();
+    tierGroup.position.set(0, cfg.baseY, 0);
+
+    // Platform Slab
+    const geo = createPlatformMesh(cfg.w, cfg.d, cfg.h, cfg.r);
+    const mat = slabMaterial.clone();
+    const mesh = new THREE.Mesh(geo, mat);
+    mesh.userData = { isTierPlatform: true, tier: cfg.tier };
+    tierGroup.add(mesh);
+
+    // Glowing Edge Accent Trim
+    const edgeTrimGeo = new THREE.BoxGeometry(cfg.w + 0.04, 0.035, cfg.d + 0.04);
+    const edgeTrimMat = new THREE.MeshStandardMaterial({
+      color: 0xff6b00,
+      emissive: 0xff5500,
+      emissiveIntensity: cfg.tier === 1 ? 0.9 : 0.25,
+      roughness: 0.2
+    });
+    const edgeTrim = new THREE.Mesh(edgeTrimGeo, edgeTrimMat);
+    edgeTrim.position.y = cfg.h / 2 + 0.02;
+    tierGroup.add(edgeTrim);
+
+    // Corner Status Nodes
+    const cornerOffset = (cfg.w / 2) - 0.15;
+    const nodeGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.08, 12);
+    const nodeMat = new THREE.MeshStandardMaterial({
+      color: 0xffaa33,
+      emissive: 0xff6b00,
+      emissiveIntensity: 0.7
+    });
+    [[-1, -1], [-1, 1], [1, -1], [1, 1]].forEach(([cx, cz]) => {
+      const node = new THREE.Mesh(nodeGeo, nodeMat);
+      node.position.set(cx * cornerOffset, cfg.h / 2 + 0.04, cz * cornerOffset);
+      tierGroup.add(node);
+    });
+
+    rootGroup.add(tierGroup);
+
+    tiers.push({
+      tier: cfg.tier,
+      name: cfg.name,
+      group: tierGroup,
+      baseY: cfg.baseY,
+      currentY: cfg.baseY,
+      targetY: cfg.baseY,
+      slabMesh: mesh,
+      edgeTrimMat: edgeTrimMat
+    });
   });
 
-  // 3. Floating Ambient Particles (Embers / System Nodes)
-  const particleCount = reduceMotion ? 20 : 65;
+  // 3. The Official Tiered System Golden Armillary Crest at the Summit
+  // (Directly modeled from the official event poster: intersecting bronze-gold rings + glowing solar core)
+  const crestGroup = new THREE.Group();
+  crestGroup.position.set(0, 1.45, 0);
+  rootGroup.add(crestGroup);
+
+  // Outer Golden Ring
+  const outerRingGeo = new THREE.TorusGeometry(0.72, 0.045, 20, 80);
+  const outerRingMesh = new THREE.Mesh(outerRingGeo, goldMetallicMaterial);
+  crestGroup.add(outerRingMesh);
+
+  // Intersecting Diagonal Golden Rings (forming the 4-petal insignia from the poster)
+  const diagRing1Geo = new THREE.TorusGeometry(0.68, 0.036, 18, 70);
+  const diagRing1 = new THREE.Mesh(diagRing1Geo, goldMetallicMaterial);
+  diagRing1.rotation.set(Math.PI / 3, Math.PI / 4, 0);
+  crestGroup.add(diagRing1);
+
+  const diagRing2Geo = new THREE.TorusGeometry(0.68, 0.036, 18, 70);
+  const diagRing2 = new THREE.Mesh(diagRing2Geo, goldMetallicMaterial);
+  diagRing2.rotation.set(-Math.PI / 3, -Math.PI / 4, 0);
+  crestGroup.add(diagRing2);
+
+  const equatorRingGeo = new THREE.TorusGeometry(0.66, 0.032, 16, 60);
+  const equatorRing = new THREE.Mesh(equatorRingGeo, goldMetallicMaterial);
+  equatorRing.rotation.x = Math.PI / 2;
+  crestGroup.add(equatorRing);
+
+  // Radiant Solar Core
+  const coreGeo = new THREE.SphereGeometry(0.28, 32, 32);
+  const coreMesh = new THREE.Mesh(coreGeo, solarCoreMaterial);
+  crestGroup.add(coreMesh);
+
+  // Ambient Ember Nodes
+  const particleCount = reduceMotion ? 15 : 45;
   const particleGeo = new THREE.BufferGeometry();
   const particlePos = new Float32Array(particleCount * 3);
   for (let i = 0; i < particleCount * 3; i += 3) {
-    const r = 2.5 + Math.random() * 3.5;
-    const theta = Math.random() * Math.PI * 2;
-    const phi = Math.acos(2 * Math.random() - 1);
-    particlePos[i] = r * Math.sin(phi) * Math.cos(theta);
-    particlePos[i + 1] = r * Math.sin(phi) * Math.sin(theta);
-    particlePos[i + 2] = r * Math.cos(phi);
+    particlePos[i] = (Math.random() - 0.5) * 4.5;
+    particlePos[i + 1] = (Math.random() - 0.5) * 3.5;
+    particlePos[i + 2] = (Math.random() - 0.5) * 2.5;
   }
   particleGeo.setAttribute("position", new THREE.BufferAttribute(particlePos, 3));
   const particleMat = new THREE.PointsMaterial({
     color: 0xffaa44,
-    size: 0.065,
+    size: 0.05,
     transparent: true,
-    opacity: 0.75
+    opacity: 0.7
   });
   const particles = new THREE.Points(particleGeo, particleMat);
-  emblemGroup.add(particles);
+  rootGroup.add(particles);
 
-  // Interactive Mouse / Touch Parallax
+  // Raycasting for direct 3D platform clicks
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+
+  function onPointerClick(event) {
+    const rect = container.getBoundingClientRect();
+    pointer.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+    pointer.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+
+    raycaster.setFromCamera(pointer, camera);
+    const intersects = raycaster.intersectObjects(rootGroup.children, true);
+
+    for (let hit of intersects) {
+      let cur = hit.object;
+      while (cur && !cur.userData?.isTierPlatform && cur.parent !== rootGroup && cur.parent !== scene) {
+        cur = cur.parent;
+      }
+      if (cur && cur.userData?.isTierPlatform) {
+        window.set3DActiveTier(cur.userData.tier);
+        // Sync with left buttons & roadmap tabs
+        const btn = document.querySelector(`[data-stack-tier="${cur.userData.tier}"]`);
+        if (btn) btn.click();
+        break;
+      }
+    }
+  }
+
+  container.addEventListener("click", onPointerClick);
+
+  // Active Tier State Manager (Elevates the selected physical 3D tier slab!)
+  let activeTierNum = 1;
+  const tierStatusLabel = document.getElementById("canvas-active-tier-label");
+
+  window.set3DActiveTier = function (tierNum) {
+    activeTierNum = tierNum;
+
+    tiers.forEach(t => {
+      const isActive = t.tier === tierNum;
+      // Mechanically elevate the selected tier upward in 3D space
+      t.targetY = isActive ? t.baseY + 0.42 : t.baseY;
+      // Illuminate edge trim
+      t.edgeTrimMat.emissiveIntensity = isActive ? 1.4 : 0.25;
+      t.edgeTrimMat.color.setHex(isActive ? 0xff7700 : 0xaa4400);
+      // Highlight slab
+      t.slabMesh.material.color.setHex(isActive ? 0x222533 : 0x14161f);
+    });
+
+    // Intensify crest when Tier 4 (Connect) is active
+    if (tierNum === 4) {
+      coreLight.intensity = 5.5;
+      crestGroup.scale.set(1.12, 1.12, 1.12);
+    } else {
+      coreLight.intensity = 4.0;
+      crestGroup.scale.set(1.0, 1.0, 1.0);
+    }
+
+    if (tierStatusLabel) {
+      const names = {
+        1: "Tier 01: Prepare · Resume & Git Proof (Day 1 Zoom)",
+        2: "Tier 02: Level Up · LinkedIn Architecture & Pitch (Day 1 Zoom)",
+        3: "Tier 03: Discover · Industry Plenary & Pathways (Day 2 Amphitheater)",
+        4: "Tier 04: Connect · Opportunity Board & Recruitment (Day 2 Amphitheater)"
+      };
+      tierStatusLabel.textContent = names[tierNum] || `Tier 0${tierNum}`;
+    }
+  };
+
+  // Mouse & Touch Orbit Controls (Tactile Spring Physics)
   let mouseX = 0;
   let mouseY = 0;
-  let targetRotationX = 0;
-  let targetRotationY = 0;
+  let targetRotationY = -0.35;
+  let targetRotationX = 0.22;
   let isHovered = false;
 
   function onPointerMove(e) {
@@ -129,8 +373,8 @@
     if (x >= 0 && x <= rect.width && y >= 0 && y <= rect.height) {
       mouseX = (x / rect.width) * 2 - 1;
       mouseY = -(y / rect.height) * 2 + 1;
-      targetRotationY = mouseX * 0.75;
-      targetRotationX = -mouseY * 0.6;
+      targetRotationY = -0.35 + mouseX * 0.65;
+      targetRotationX = 0.22 - mouseY * 0.45;
       isHovered = true;
     } else {
       isHovered = false;
@@ -156,15 +400,15 @@
     if (!isDragging || e.touches.length !== 1) return;
     const dx = e.touches[0].clientX - prevTouchX;
     const dy = e.touches[0].clientY - prevTouchY;
-    targetRotationY += dx * 0.008;
-    targetRotationX += dy * 0.008;
+    targetRotationY += dx * 0.007;
+    targetRotationX += dy * 0.007;
     prevTouchX = e.touches[0].clientX;
     prevTouchY = e.touches[0].clientY;
   }, { passive: true });
 
   window.addEventListener("touchend", () => { isDragging = false; });
 
-  // Responsiveness
+  // Viewport resize
   function onResize() {
     if (!container) return;
     const width = container.clientWidth;
@@ -175,33 +419,17 @@
   }
   window.addEventListener("resize", onResize, { passive: true });
 
-  // Pause rendering when off-screen for maximum performance
+  // Intersection observer: sleep when scrolled off screen
   let isVisible = true;
   const observer = new IntersectionObserver(([entry]) => {
     isVisible = entry.isIntersecting;
   }, { threshold: 0.05 });
   observer.observe(container);
 
-  // Active Tier State Integration (highlights the corresponding ring when user clicks a tier tab!)
-  window.set3DActiveTier = function (tierNum) {
-    rings.forEach((r, idx) => {
-      const match = r.tier === tierNum;
-      if (match) {
-        r.mesh.material.emissive.setHex(0xff6b00);
-        r.mesh.material.emissiveIntensity = 0.8;
-        r.mesh.scale.set(1.08, 1.08, 1.08);
-      } else {
-        r.mesh.material.emissive.setHex(0x000000);
-        r.mesh.material.emissiveIntensity = 0;
-        r.mesh.scale.set(1, 1, 1);
-      }
-    });
-    coreLight.color.setHex(tierNum === 4 ? 0xff4400 : 0xff7700);
-    coreLight.intensity = 4.2;
-    setTimeout(() => { coreLight.intensity = 3.5; }, 400);
-  };
+  // Initialize Tier 1 as active
+  window.set3DActiveTier(1);
 
-  // Animation Loop with Spring Physics
+  // Render Loop
   let clock = new THREE.Clock();
 
   function animate() {
@@ -210,18 +438,23 @@
 
     const delta = clock.getDelta();
 
-    // Constant smooth background rotation
+    // Subtle continuous spin of the official crest at the summit
     if (!reduceMotion) {
-      emblemGroup.rotation.y += 0.004;
-      rings.forEach(r => {
-        r.mesh.rotation.z += r.baseSpeed * (isHovered ? 1.8 : 1);
-      });
-      particles.rotation.y -= 0.002;
+      crestGroup.rotation.y += 0.012;
+      diagRing1.rotation.z += 0.006;
+      diagRing2.rotation.z -= 0.006;
+      particles.rotation.y += 0.002;
     }
 
-    // Spring interpolation toward mouse target
-    emblemGroup.rotation.y += (targetRotationY - emblemGroup.rotation.y) * 0.06;
-    emblemGroup.rotation.x += (targetRotationX - emblemGroup.rotation.x) * 0.06;
+    // Spring physics: smoothly elevate active tier slab and lower others
+    tiers.forEach(t => {
+      t.currentY += (t.targetY - t.currentY) * 0.12;
+      t.group.position.y = t.currentY;
+    });
+
+    // Smooth inertia camera tracking toward mouse/touch target
+    rootGroup.rotation.y += (targetRotationY - rootGroup.rotation.y) * 0.07;
+    rootGroup.rotation.x += (targetRotationX - rootGroup.rotation.x) * 0.07;
 
     renderer.render(scene, camera);
   }

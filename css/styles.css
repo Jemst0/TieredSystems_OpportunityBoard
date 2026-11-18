@@ -575,6 +575,7 @@ header.top-navbar {
 /* Helixa Dark Glass Company Card */
 .company-card {
   flex-shrink: 0;
+  min-height: fit-content;
   background: var(--surface-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-md);
