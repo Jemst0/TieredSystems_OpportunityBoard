@@ -3,363 +3,395 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TIERED SYSTEM • MOA Partner Directory & Opportunity Locator</title>
-  <meta name="description" content="Interactive directory and radar map of verified Memorandum of Agreement (MOA) industry partner companies for BatStateU Alangilan engineering and computing students." />
-  <meta property="og:title" content="TIERED SYSTEM • MOA Opportunity Board" />
-  <meta property="og:description" content="Explore verified MOA industry partners across Batangas, Calabarzon, and Metro Manila. Filter by engineering discipline, internship setup, and campus distance." />
+  <title>Tiered Systems: Engineering Your Next Level · CURSOR BatStateU</title>
+  <meta name="description" content="A two-day career readiness program for Computer Engineering students at BatStateU Alangilan. Four tiers: Prepare, Level Up, Discover, Connect. November 18–19, 2026." />
+  <meta property="og:title" content="Tiered Systems: Engineering Your Next Level" />
+  <meta property="og:description" content="Resume and portfolio workshops, an industry plenary, an alumni panel, and a map of MOA partner companies. Nov 18–19, 2026." />
   <meta property="og:type" content="website" />
   <meta name="theme-color" content="#070709" />
 
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
-  <!-- Google Fonts: Inter & Geist Mono -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
-
-  <!-- Tokenized Design System Stylesheet -->
-  <link rel="stylesheet" href="./css/styles.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./css/landing.css" />
 </head>
 <body>
+  <a class="skip-link" href="#main">Skip to content</a>
 
-  <!-- Ambient Golden-Orange Volumetric Glow -->
-  <div class="ambient-radial-glow" aria-hidden="true"></div>
-
-  <!-- Non-blocking Status / Offline / Sync Recovery Banner -->
-  <div class="status-banner" id="status-banner" role="status" aria-live="polite">
-    <span id="status-banner-text">Status active</span>
-    <button type="button" class="btn-ts" style="min-height:28px; padding:3px 10px;" onclick="document.getElementById('status-banner').classList.remove('visible')">
-      Dismiss
-    </button>
-  </div>
-
-  <!-- Top Navigation Header -->
-  <header class="top-navbar">
-    <div class="brand-group">
-      <!-- 3D Tiered System Emblem -->
-      <div class="brand-emblem-wrap" aria-hidden="true">
-        <svg class="brand-emblem-svg" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="9" stroke="var(--brand-primary)" stroke-width="1.8" />
-          <ellipse cx="12" cy="12" rx="9" ry="4" stroke="var(--brand-primary)" stroke-width="1.8" />
-          <ellipse cx="12" cy="12" rx="4" ry="9" stroke="var(--brand-primary)" stroke-width="1.8" />
-          <polygon points="12,5 15,12 12,19 9,12" fill="var(--brand-primary)" fill-opacity="0.25" stroke="var(--brand-primary)" stroke-width="1.4" />
+  <!-- Navigation -->
+  <header class="nav" id="nav">
+    <div class="container nav-inner">
+      <a href="#top" class="brand" aria-label="Tiered Systems home">
+        <svg class="brand-mark" viewBox="0 0 24 24" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" />
+          <ellipse cx="12" cy="12" rx="9" ry="4" />
+          <ellipse cx="12" cy="12" rx="4" ry="9" />
         </svg>
-      </div>
+        <span class="brand-word">Tiered Systems</span>
+      </a>
 
-      <div class="brand-text-block">
-        <h1>
-          T I E R E D &nbsp; S Y S T E M
-          <span class="pill-accent">OPPORTUNITY BOARD</span>
-        </h1>
-        <p>Computer Engineering Students' Organization • BatStateU Alangilan</p>
-      </div>
+      <nav class="nav-links" aria-label="Primary">
+        <a href="#tiers">Tiers</a>
+        <a href="#board">Opportunity Board</a>
+        <a href="#schedule">Schedule</a>
+        <a href="#faq">FAQ</a>
+      </nav>
+
+      <a href="./board.html" class="btn btn-outline nav-cta">Open the board</a>
     </div>
-
-    <nav class="header-actions" aria-label="Directory controls">
-      <div class="metric-badge hide-mobile" title="Total available internship slots matching filters">
-        <span class="pulsing-dot" aria-hidden="true"></span>
-        <span id="active-slots-count">Open Slots: --</span>
-      </div>
-
-      <div class="metric-badge green hide-mobile">
-        <span>✓ 100% MOA Verified</span>
-      </div>
-
-      <button type="button" class="btn-ts" id="btn-open-sync-modal" title="Connect Google Sheets CSV or manage local database">
-        🔗 Data Source
-      </button>
-
-      <button type="button" class="btn-ts" id="btn-export-csv" title="Download filtered directory as CSV">
-        📥 Export CSV
-      </button>
-
-      <button type="button" class="btn-ts primary" id="btn-open-add-modal">
-        ＋ Add Partner
-      </button>
-    </nav>
   </header>
 
-  <!-- Main Split Workspace -->
-  <main class="app-workspace" data-mobile-view="list">
+  <main id="main">
 
-    <!-- Left Directory Sidebar -->
-    <aside class="sidebar" aria-label="Partner company directory filters and list">
-      <div class="filter-panel">
-        <!-- Persistent Visible Label for Search -->
-        <div class="search-field-group">
-          <label class="control-label" for="search-input">
-            <span>Search Partner Directory</span>
-            <span style="color:var(--brand-primary);">16+ Verified MOAs</span>
-          </label>
-          <div class="search-wrapper">
-            <span class="search-icon" aria-hidden="true">⚡</span>
-            <input
-              type="text"
-              id="search-input"
-              class="search-input"
-              placeholder="Company name, city, tech stack, or MOA ref..."
-            />
-            <button type="button" id="search-clear-btn" class="search-clear-btn" aria-label="Clear search query">&times;</button>
-          </div>
-        </div>
-
-        <!-- 3-Column Filter Grid: Program, Opportunity Type, Campus Origin -->
-        <div class="filter-grid-3">
-          <div>
-            <label class="control-label" for="filter-program">Program</label>
-            <select id="filter-program" class="filter-select">
-              <option value="all">All Programs</option>
-              <option value="CpE">CpE (Comp Eng)</option>
-              <option value="ECE">ECE (Electronics)</option>
-              <option value="EE">EE (Electrical)</option>
-              <option value="ME">ME (Mechanical)</option>
-              <option value="IE">IE (Industrial)</option>
-              <option value="CS">CS (Comp Sci)</option>
-              <option value="IT">IT (Info Tech)</option>
-              <option value="ChE">ChE (Chemical)</option>
-              <option value="CE">CE (Civil)</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="control-label" for="filter-accepts">Accepts</label>
-            <select id="filter-accepts" class="filter-select">
-              <option value="all">All Tracks</option>
-              <option value="OJT / Internship">OJT / Internship</option>
-              <option value="Fresh Grad Hiring">Fresh Grad Hiring</option>
-              <option value="Capstone / Industry Project">Capstone Project</option>
-              <option value="Plant Visit / Immersion">Plant Immersion</option>
-            </select>
-          </div>
-
-          <div>
-            <label class="control-label" for="filter-campus">Campus Node</label>
-            <select id="filter-campus" class="filter-select">
-              <option value="alangilan">Alangilan</option>
-              <option value="pabloBorbon">Pablo Borbon</option>
-              <option value="malvar">Malvar</option>
-              <option value="lipa">Lipa</option>
-            </select>
-          </div>
-        </div>
-
-        <!-- Distance Radius Slider -->
-        <div class="distance-slider-box">
-          <div class="slider-header">
-            <label for="radius-slider">Max Distance from Campus:</label>
-            <span class="slider-badge" id="slider-val-label">All (No Limit)</span>
-          </div>
-          <input
-            type="range"
-            id="radius-slider"
-            class="range-input"
-            min="10"
-            max="120"
-            step="5"
-            value="120"
-          />
-        </div>
-
-        <!-- Quick Sector & Bookmark Filter Chips -->
-        <div class="quick-chips-wrapper" role="group" aria-label="Quick category filters">
-          <button type="button" class="chip-btn active" data-filter="all">All Partners</button>
-          <button type="button" class="chip-btn" data-filter="Saved" id="saved-count-chip">⭐ Saved (0)</button>
-          <button type="button" class="chip-btn" data-filter="Paid Allowance">💰 Paid Allowance</button>
-          <button type="button" class="chip-btn" data-filter="Semiconductor">⚡ Semiconductor</button>
-          <button type="button" class="chip-btn" data-filter="Software/AI">💻 Software / AI</button>
-          <button type="button" class="chip-btn" data-filter="Energy">🔋 Clean Energy</button>
-          <button type="button" class="chip-btn" data-filter="Manufacturing">🏭 Robotics & Mfg</button>
-        </div>
+    <!-- Hero -->
+    <section class="hero" id="top">
+      <div class="hero-backdrop" aria-hidden="true">
+        <div class="hero-tiles"></div>
+        <div class="hero-light"></div>
       </div>
 
-      <!-- Results Stats & Sorter -->
-      <div class="results-count-bar">
-        <span id="results-count-text" aria-live="polite">Loading directory...</span>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="hero-meta">
+            <span>Nov 18–19, 2026</span>
+            <span aria-hidden="true">·</span>
+            <span>CURSOR, BatStateU Alangilan</span>
+          </p>
 
-        <div class="sort-control">
-          <label for="sort-order">Sort:</label>
-          <select id="sort-order" class="sort-select">
-            <option value="nearest">Nearest to Campus</option>
-            <option value="slots">Most Open Slots</option>
-            <option value="name">Alphabetical (A–Z)</option>
-          </select>
-          <button type="button" id="btn-reset-filters" class="reset-btn" style="display: none;">Reset</button>
+          <h1 class="hero-title">Engineering your next level.</h1>
+
+          <p class="hero-lede">
+            A two-day career program for Computer Engineering students. Fix your resume, document a real project, hear what industry expects, then find a partner company on the map.
+          </p>
+
+          <div class="hero-actions">
+            <a href="./board.html" class="btn btn-primary btn-lg">
+              Open the Opportunity Board
+              <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+            </a>
+            <a href="#schedule" class="btn btn-ghost btn-lg">See the schedule</a>
+          </div>
+
+          <p class="event-status" id="event-status" role="status" aria-live="polite">
+            <span class="status-dot" aria-hidden="true"></span>
+            <span id="event-status-text">Checking event status…</span>
+          </p>
         </div>
+
+        <!-- Actual product: live map preview -->
+        <a href="./board.html" class="product-frame" aria-label="Open the Opportunity Board map">
+          <div class="frame-bar">
+            <span class="frame-title">Opportunity Board</span>
+            <span class="frame-meta num" id="preview-count">— partners</span>
+          </div>
+          <div class="frame-body">
+            <div class="preview-map-wrap">
+              <div id="preview-map" class="preview-map" aria-hidden="true"></div>
+              <div class="map-skeleton" id="map-skeleton" aria-hidden="true"></div>
+            </div>
+            <ol class="preview-list" id="preview-list" aria-label="Nearest partner companies to Alangilan campus">
+              <li class="preview-item is-loading"><span class="sk sk-w70"></span><span class="sk sk-w30"></span></li>
+              <li class="preview-item is-loading"><span class="sk sk-w60"></span><span class="sk sk-w30"></span></li>
+              <li class="preview-item is-loading"><span class="sk sk-w80"></span><span class="sk sk-w30"></span></li>
+            </ol>
+          </div>
+        </a>
       </div>
+    </section>
 
-      <!-- Scrollable Company Cards -->
-      <div class="companies-list" id="companies-container"></div>
-    </aside>
-
-    <!-- Right Interactive Radar Map -->
-    <section class="map-container-pane" aria-label="Interactive partner location map">
-      <div id="opportunity-map"></div>
-
-      <!-- Floating Basemap Switcher & Quick Jumps -->
-      <div class="map-floating-bar" role="toolbar" aria-label="Map style and camera controls">
-        <button type="button" class="basemap-btn active" data-style="dark">🌑 Dark</button>
-        <button type="button" class="basemap-btn" data-style="street">🗺️ Street</button>
-        <button type="button" class="basemap-btn" data-style="satellite">🛰️ Satellite</button>
-        <div style="width: 1px; background: var(--border-subtle); margin: 2px;"></div>
-        <button type="button" class="basemap-btn" id="btn-jump-campus">🏛️ Campus</button>
-        <button type="button" class="basemap-btn" id="btn-fit-bounds">🔍 Fit All</button>
-      </div>
-
-      <!-- Map Legend -->
-      <div class="map-legend" aria-hidden="true">
-        <div class="legend-row">
-          <span style="display:inline-block; width:10px; height:10px; background:var(--brand-primary); border-radius:50%; box-shadow:0 0 6px var(--brand-primary);"></span>
-          <span>Verified MOA Partner</span>
+    <!-- Facts strip -->
+    <section class="facts" aria-label="Program at a glance">
+      <div class="container facts-grid">
+        <div class="fact">
+          <span class="fact-value num">4</span>
+          <span class="fact-label">tiers, taken in order</span>
         </div>
-        <div class="legend-row">
-          <span style="display:inline-block; width:10px; height:10px; background:#ffffff; border-radius:2px; border:1px solid var(--brand-primary);"></span>
-          <span>BatStateU Campus Node</span>
+        <div class="fact">
+          <span class="fact-value num">2</span>
+          <span class="fact-label">afternoons, 1:00–5:00 PM</span>
+        </div>
+        <div class="fact">
+          <span class="fact-value num" id="fact-partners">—</span>
+          <span class="fact-label">partner companies mapped</span>
+        </div>
+        <div class="fact">
+          <span class="fact-value num" id="fact-hubs">—</span>
+          <span class="fact-label">industrial hubs covered</span>
         </div>
       </div>
     </section>
 
-    <!-- Mobile Floating View Switcher (360px - 860px) -->
-    <div class="mobile-view-switcher" role="tablist" aria-label="Switch between directory list and map">
-      <button type="button" class="mobile-tab-btn active" data-view="list">📋 Directory List</button>
-      <button type="button" class="mobile-tab-btn" data-view="map">🗺️ Radar Map</button>
-    </div>
+    <!-- Tiers -->
+    <section class="section" id="tiers" aria-labelledby="tiers-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="tiers-title" class="section-title">Four tiers. Each one feeds the next.</h2>
+          <p class="section-lede">
+            Day 1 builds your materials. Day 2 shows you where to use them.
+          </p>
+        </div>
 
+        <div class="tiers" data-tiers>
+          <div class="tier-tabs" role="tablist" aria-label="Program tiers">
+            <button class="tier-tab" role="tab" id="tab-1" aria-controls="panel-1" aria-selected="true">
+              <span class="tier-num num">01</span>
+              <span class="tier-name">Prepare</span>
+              <span class="tier-day">Day 1 · Zoom</span>
+            </button>
+            <button class="tier-tab" role="tab" id="tab-2" aria-controls="panel-2" aria-selected="false" tabindex="-1">
+              <span class="tier-num num">02</span>
+              <span class="tier-name">Level Up</span>
+              <span class="tier-day">Day 1 · Zoom</span>
+            </button>
+            <button class="tier-tab" role="tab" id="tab-3" aria-controls="panel-3" aria-selected="false" tabindex="-1">
+              <span class="tier-num num">03</span>
+              <span class="tier-name">Discover</span>
+              <span class="tier-day">Day 2 · STEER Hub</span>
+            </button>
+            <button class="tier-tab" role="tab" id="tab-4" aria-controls="panel-4" aria-selected="false" tabindex="-1">
+              <span class="tier-num num">04</span>
+              <span class="tier-name">Connect</span>
+              <span class="tier-day">Day 2 · STEER Hub</span>
+            </button>
+          </div>
+
+          <div class="tier-panels">
+            <article class="tier-panel" role="tabpanel" id="panel-1" aria-labelledby="tab-1">
+              <div class="tier-panel-copy">
+                <h3>Resume and technical portfolio</h3>
+                <p>Mentor-led session on resume formatting and documenting one project you actually built. Feedback covers readability, relevant skills, accurate contributions, and how clearly you explain the work.</p>
+              </div>
+              <div class="tier-panel-side">
+                <h4>Bring</h4>
+                <ul class="check-list">
+                  <li>A digital resume draft</li>
+                  <li>One technical project: code, circuit design, CAD files, test results, network docs, or a demo video</li>
+                </ul>
+                <p class="tier-time num">1:20–2:45 PM · Nov 18</p>
+              </div>
+            </article>
+
+            <article class="tier-panel" role="tabpanel" id="panel-2" aria-labelledby="tab-2" hidden>
+              <div class="tier-panel-copy">
+                <h3>LinkedIn and your pitch</h3>
+                <p>Tighten your professional profile, drill a 45–60 second introduction, and draft a 3-to-6-month career roadmap with peer and mentor feedback.</p>
+              </div>
+              <div class="tier-panel-side">
+                <h4>Bring</h4>
+                <ul class="check-list">
+                  <li>Access to your LinkedIn account</li>
+                  <li>A rough idea of the role you want next</li>
+                </ul>
+                <p class="tier-time num">3:00–4:15 PM · Nov 18</p>
+              </div>
+            </article>
+
+            <article class="tier-panel" role="tabpanel" id="panel-3" aria-labelledby="tab-3" hidden>
+              <div class="tier-panel-copy">
+                <h3>What industry expects</h3>
+                <p>An industry plenary on hiring standards and OJT requirements, then a moderated panel with CpE alumni and corporate engineers. You leave with one career path picked and the skills it needs written down.</p>
+              </div>
+              <div class="tier-panel-side">
+                <h4>Sessions</h4>
+                <ul class="check-list">
+                  <li>Industry plenary address</li>
+                  <li>Alumni panel and open forum</li>
+                </ul>
+                <p class="tier-time num">1:20–2:45 PM · Nov 19</p>
+              </div>
+            </article>
+
+            <article class="tier-panel" role="tabpanel" id="panel-4" aria-labelledby="tab-4" hidden>
+              <div class="tier-panel-copy">
+                <h3>Opportunity Board and Resource Vault</h3>
+                <p>Career conversations with alumni and engineers, the partner company map, and curated software licenses and certification resources. Record one opportunity and one concrete follow-up before you leave.</p>
+              </div>
+              <div class="tier-panel-side">
+                <h4>Stations</h4>
+                <ul class="check-list">
+                  <li>Opportunity Board</li>
+                  <li>Resource Vault</li>
+                  <li>Career conversations</li>
+                </ul>
+                <p class="tier-time num">3:00–4:30 PM · Nov 19</p>
+              </div>
+            </article>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Opportunity Board showcase -->
+    <section class="section section-alt" id="board" aria-labelledby="board-title">
+      <div class="container board-grid">
+        <div class="board-copy">
+          <h2 id="board-title" class="section-title">Find partner companies by program, distance, and what they accept.</h2>
+          <p class="section-lede">
+            Every pin is a company with a memorandum of agreement with the university. Pick your campus and the board measures the distance to each one.
+          </p>
+
+          <dl class="feature-list">
+            <div class="feature">
+              <dt>Filter by program</dt>
+              <dd>CpE, ECE, EE, ME, IE, CS, IT, and more.</dd>
+            </div>
+            <div class="feature">
+              <dt>Filter by what they accept</dt>
+              <dd>OJT, fresh graduate hiring, capstone projects, or plant visits.</dd>
+            </div>
+            <div class="feature">
+              <dt>Measure from your campus</dt>
+              <dd>Alangilan, Pablo Borbon, Malvar, or Lipa, with a radius slider.</dd>
+            </div>
+            <div class="feature">
+              <dt>Save a shortlist</dt>
+              <dd>Star companies and compare them later. Stored on your device.</dd>
+            </div>
+          </dl>
+
+          <a href="./board.html" class="btn btn-primary btn-lg">
+            Open the Opportunity Board
+            <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+          </a>
+        </div>
+
+        <div class="partner-table-wrap">
+          <table class="partner-table">
+            <caption class="visually-hidden">Partner companies by hub</caption>
+            <thead>
+              <tr>
+                <th scope="col">Hub</th>
+                <th scope="col" class="t-right">Partners</th>
+                <th scope="col" class="t-right">Open slots</th>
+              </tr>
+            </thead>
+            <tbody id="hub-table">
+              <tr class="is-loading"><td colspan="3"><span class="sk sk-w100"></span></td></tr>
+              <tr class="is-loading"><td colspan="3"><span class="sk sk-w100"></span></td></tr>
+              <tr class="is-loading"><td colspan="3"><span class="sk sk-w100"></span></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="section" id="schedule" aria-labelledby="schedule-title">
+      <div class="container">
+        <div class="section-head">
+          <h2 id="schedule-title" class="section-title">Two afternoons, one online and one on campus.</h2>
+        </div>
+
+        <div class="days">
+          <article class="day" id="day-1">
+            <header class="day-head">
+              <div>
+                <h3>Day 1 · Prepare and Level Up</h3>
+                <p class="day-where">Wednesday, Nov 18 · Zoom</p>
+              </div>
+              <span class="day-badge" data-day-badge="1" hidden></span>
+            </header>
+            <ol class="timeline">
+              <li><span class="t num">1:00</span><span>Invocation and opening remarks</span></li>
+              <li><span class="t num">1:10</span><span>Event overview and reminders</span></li>
+              <li class="is-key"><span class="t num">1:20</span><span>Tier 01: Resume and technical portfolio workshop</span></li>
+              <li><span class="t num">2:45</span><span>Break and breakout setup</span></li>
+              <li class="is-key"><span class="t num">3:00</span><span>Tier 02: LinkedIn branding and pitching</span></li>
+              <li><span class="t num">4:15</span><span>Profile evaluation and cohort assessment</span></li>
+              <li><span class="t num">4:45</span><span>Day 1 synthesis and Day 2 briefing</span></li>
+              <li><span class="t num">4:55</span><span>Photo and adjournment</span></li>
+            </ol>
+          </article>
+
+          <article class="day" id="day-2">
+            <header class="day-head">
+              <div>
+                <h3>Day 2 · Discover and Connect</h3>
+                <p class="day-where">Thursday, Nov 19 · 5th Floor STEER Hub</p>
+              </div>
+              <span class="day-badge" data-day-badge="2" hidden></span>
+            </header>
+            <ol class="timeline">
+              <li><span class="t num">1:00</span><span>Invocation and Day 1 synthesis</span></li>
+              <li><span class="t num">1:15</span><span>Introduction of speaker and panelists</span></li>
+              <li class="is-key"><span class="t num">1:20</span><span>Tier 03: Industry plenary address</span></li>
+              <li class="is-key"><span class="t num">2:00</span><span>Tier 03: CpE alumni panel and open forum</span></li>
+              <li><span class="t num">2:45</span><span>Certificates for guest speakers</span></li>
+              <li class="is-key"><span class="t num">3:00</span><span>Tier 04: Career conversations, Opportunity Board, Resource Vault</span></li>
+              <li><span class="t num">4:30</span><span>Raffle and roadmap submission</span></li>
+              <li><span class="t num">4:40</span><span>Awarding and closing remarks</span></li>
+            </ol>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAQ -->
+    <section class="section section-alt" id="faq" aria-labelledby="faq-title">
+      <div class="container faq-grid">
+        <h2 id="faq-title" class="section-title">Before you join</h2>
+
+        <div class="faq-list">
+          <details class="faq">
+            <summary>Who is this for?</summary>
+            <p>Computer Engineering students at BatStateU who want a clearer path into OJT, internships, or their first job.</p>
+          </details>
+          <details class="faq">
+            <summary>What should I prepare for Day 1?</summary>
+            <p>A digital resume draft, evidence from one technical project, and access to your LinkedIn account. Templates and instructions are sent to registered participants before the event.</p>
+          </details>
+          <details class="faq">
+            <summary>Do I get a certificate?</summary>
+            <p>Attendance is recorded separately for each day. Certificates of Completion go to participants who meet the announced attendance requirements and submit their outputs.</p>
+          </details>
+          <details class="faq">
+            <summary>Can I use the Opportunity Board after the event?</summary>
+            <p>Yes. The board stays online. Your saved shortlist is stored in your browser, so use the same device to see it again.</p>
+          </details>
+          <details class="faq">
+            <summary>Who organizes this?</summary>
+            <p>The Computer Engineering Students' Organization (CURSOR), with proposed workshop support from CIRCUIT 2.0.</p>
+          </details>
+        </div>
+      </div>
+    </section>
+
+    <!-- Closing CTA -->
+    <section class="closing">
+      <div class="container closing-inner">
+        <h2 class="closing-title">Start with the map. Pick one company to follow up on.</h2>
+        <a href="./board.html" class="btn btn-primary btn-lg">
+          Open the Opportunity Board
+          <svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>
+        </a>
+      </div>
+    </section>
   </main>
 
-  <!-- Modal 1: Company MOA Details -->
-  <div class="modal-overlay" id="company-modal" role="dialog" aria-modal="true" aria-labelledby="modal-company-title">
-    <div class="modal-card">
-      <button type="button" class="modal-close-btn" id="btn-modal-close" aria-label="Close details modal">&times;</button>
-      <div id="modal-content"></div>
-    </div>
-  </div>
-
-  <!-- Modal 2: Add New MOA Partner -->
-  <div class="modal-overlay" id="add-company-modal" role="dialog" aria-modal="true" aria-labelledby="add-modal-title">
-    <div class="modal-card">
-      <button type="button" class="modal-close-btn" id="btn-add-modal-close" aria-label="Close add partner modal">&times;</button>
-      <h2 id="add-modal-title" style="font-size:var(--text-lg); font-weight:800; margin-bottom:4px; color:#ffffff;">Add Verified MOA Partner</h2>
-      <p style="font-size:var(--text-xs); color:var(--text-muted); margin-bottom:1.1rem;">
-        Pin a new partner company onto the Opportunity Board. Saved automatically in your browser and included in CSV exports.
-      </p>
-
-      <form id="form-add-company">
-        <div class="form-group">
-          <label for="new-name">Company Name *</label>
-          <input type="text" id="new-name" class="form-control" placeholder="e.g. Texas Instruments Philippines" required />
-        </div>
-
-        <div class="filter-grid-3 form-group">
-          <div>
-            <label for="new-category">Industry Sector *</label>
-            <select id="new-category" class="form-control">
-              <option value="Semiconductor">Semiconductor</option>
-              <option value="Software/AI">Software / AI</option>
-              <option value="Energy">Clean Energy</option>
-              <option value="Manufacturing">Manufacturing</option>
-              <option value="Telecom">Telecom</option>
-            </select>
-          </div>
-          <div>
-            <label for="new-setup">Work Setup</label>
-            <select id="new-setup" class="form-control">
-              <option value="On-Site">On-Site</option>
-              <option value="Hybrid">Hybrid</option>
-              <option value="Remote Friendly">Remote Friendly</option>
-            </select>
-          </div>
-          <div>
-            <label for="new-slots">Open Slots *</label>
-            <input type="number" id="new-slots" class="form-control" value="10" min="0" required />
-          </div>
-        </div>
-
-        <div class="filter-grid-3 form-group" style="grid-template-columns: 1fr 1fr;">
-          <div>
-            <label for="new-lat">Latitude *</label>
-            <input type="number" step="0.0001" id="new-lat" class="form-control" placeholder="13.9412" required />
-          </div>
-          <div>
-            <label for="new-lng">Longitude *</label>
-            <input type="number" step="0.0001" id="new-lng" class="form-control" placeholder="121.1634" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="new-address">Full Address / Industrial Park *</label>
-          <input type="text" id="new-address" class="form-control" placeholder="e.g. Lima Technology Center, Lipa City, Batangas" required />
-        </div>
-
-        <div class="filter-grid-3 form-group" style="grid-template-columns: 1fr 1fr;">
-          <div>
-            <label for="new-allowance">Stipend / Allowance</label>
-            <select id="new-allowance" class="form-control">
-              <option value="true">Paid Allowance Provided</option>
-              <option value="false">Standard OJT Immersion</option>
-            </select>
-          </div>
-          <div>
-            <label for="new-programs">Accepted Programs (comma-separated)</label>
-            <input type="text" id="new-programs" class="form-control" value="CpE, ECE, EE, CS" required />
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="new-desc">Brief Overview & Roles</label>
-          <input type="text" id="new-desc" class="form-control" placeholder="Brief summary of internship tracks offered..." />
-        </div>
-
-        <div style="display:flex; gap:10px; margin-top:1.2rem;">
-          <button type="submit" class="btn-ts primary" style="flex:1;">Save & Pin to Radar</button>
-          <button type="button" id="btn-cancel-add" class="btn-ts">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-  <!-- Modal 3: Database & Google Sheets Live Sync Configuration -->
-  <div class="modal-overlay" id="sync-modal" role="dialog" aria-modal="true" aria-labelledby="sync-modal-title">
-    <div class="modal-card">
-      <button type="button" class="modal-close-btn" id="btn-sync-modal-close" aria-label="Close database sync modal">&times;</button>
-      <h2 id="sync-modal-title" style="font-size:var(--text-lg); font-weight:800; margin-bottom:4px; color:#ffffff;">Database & Google Sheets Live Sync</h2>
-      <p style="font-size:var(--text-xs); color:var(--text-muted); margin-bottom:1rem; line-height:1.5;">
-        By default, this website loads from <code>data/companies.json</code>. You can also connect a live <strong>Google Sheet</strong> so officers can update companies anytime without editing code.
-      </p>
-
-      <div style="background:rgba(255,107,0,0.08); border:1px solid var(--brand-border); border-radius:var(--radius-sm); padding:12px; margin-bottom:1rem; font-size:var(--text-xs); color:var(--text-secondary); line-height:1.55;">
-        <strong style="color:var(--brand-primary); display:block; margin-bottom:4px;">How to connect a Google Sheet in 30 seconds:</strong>
-        1. Import <code>data/moa_companies_template.csv</code> into Google Sheets.<br />
-        2. In Google Sheets, click <strong>File &rarr; Share &rarr; Publish to web</strong>.<br />
-        3. Choose <strong>Comma-separated values (.csv)</strong> and paste the link below.
+  <footer class="footer">
+    <div class="container footer-grid">
+      <div class="footer-brand">
+        <span class="brand-word">Tiered Systems</span>
+        <p>Computer Engineering Students' Organization<br />Batangas State University, The National Engineering University – Alangilan</p>
       </div>
 
-      <form id="form-sync-sheet">
-        <div class="form-group">
-          <label for="sheet-csv-url-input">Published Google Sheet CSV URL (Optional)</label>
-          <input
-            type="url"
-            id="sheet-csv-url-input"
-            class="form-control"
-            placeholder="https://docs.google.com/spreadsheets/d/e/.../pub?output=csv"
-          />
-        </div>
-
-        <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top:1.2rem;">
-          <button type="submit" class="btn-ts primary" style="flex:1;">Save & Sync Database</button>
-          <a href="./data/moa_companies_template.csv" download class="btn-ts" style="text-decoration:none;">
-            📄 Download CSV Template
-          </a>
-          <button type="button" id="btn-clear-custom-data" class="btn-ts" style="color:var(--status-danger); border-color:rgba(248,113,113,0.35);">
-            Reset Local Cache
-          </button>
-        </div>
-      </form>
+      <dl class="footer-team">
+        <div><dt>James G. Villaflor</dt><dd>Event Head</dd></div>
+        <div><dt>Harry V. Dimaano</dt><dd>Event Co-Head</dd></div>
+        <div><dt>Zyrell Anne C. Hubilla</dt><dd>Event Co-Head</dd></div>
+        <div><dt>Ivan V. Salcedo</dt><dd>President, CURSOR</dd></div>
+        <div><dt>Engr. Anthony G. Hernandez</dt><dd>Adviser, CURSOR</dd></div>
+      </dl>
     </div>
-  </div>
+    <div class="container footer-bottom">
+      <span>© 2026 CURSOR · BatStateU Alangilan</span>
+      <a href="https://github.com/Jemst0/TieredSystems_OpportunityBoard">Source on GitHub</a>
+    </div>
+  </footer>
 
-  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <script src="./js/database.js"></script>
-  <script src="./js/app.js"></script>
+  <script src="./js/landing.js"></script>
 </body>
 </html>
